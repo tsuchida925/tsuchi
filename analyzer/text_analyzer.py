@@ -4,7 +4,7 @@
 
 import re
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Any
 
 @dataclass
 class TextSignal:
