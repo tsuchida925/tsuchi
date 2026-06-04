@@ -7,3 +7,6 @@ duckduckgo-search>=6.0.0
 lxml>=5.0.0
 python-dateutil>=2.8.0
 python-pptx>=0.6.21
+pymupdf>=1.23.0
+pytesseract>=0.3.10
+Pillow>=10.0.0
