@@ -154,7 +154,7 @@ with st.form("investigation_form"):
 # ── 調査実行 ──────────────────────────────────────────────────────
 
 if submitted:
-    if not any([project_name, url_input, contract_address, text_input, pdf_file]):
+    if not any([project_name, url_input, contract_address, text_input, uploaded_file]):
         st.error("少なくとも1つの入力を提供してください。")
         st.stop()
 
