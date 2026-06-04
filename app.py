@@ -164,19 +164,26 @@ if submitted:
 
     if uploaded_file:
         fname = uploaded_file.name.lower()
-        if fname.endswith(".pptx"):
+        file_bytes = uploaded_file.read()
+        # ファイル名に pptx が含まれる、または拡張子が pptx の場合はPPTXとして処理
+        is_pptx = ".pptx" in fname
+        if is_pptx:
             with st.spinner("📊 PPTX を解析中..."):
-                pptx_text, pptx_error = extract_pptx_text(uploaded_file.read())
+                pptx_text, pptx_error = extract_pptx_text(file_bytes)
                 if pptx_error:
                     st.warning(f"PPTX: {pptx_error}")
+                elif len(pptx_text) == 0:
+                    st.warning("PPTXからテキストを抽出できませんでした（画像スライドの可能性）")
                 else:
                     combined_text += "\n\n" + pptx_text
                     st.success(f"✅ PPTX から {len(pptx_text):,} 文字を抽出しました")
         else:
             with st.spinner("📄 PDF を解析中..."):
-                pdf_text, pdf_error = extract_pdf_text(uploaded_file.read())
+                pdf_text, pdf_error = extract_pdf_text(file_bytes)
                 if pdf_error:
                     st.warning(f"PDF: {pdf_error}")
+                elif len(pdf_text) == 0:
+                    st.warning("PDFからテキストを抽出できませんでした（スキャン画像PDFの可能性）")
                 else:
                     combined_text += "\n\n" + pdf_text
                     st.success(f"✅ PDF から {len(pdf_text):,} 文字を抽出しました")
