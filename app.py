@@ -165,8 +165,9 @@ if submitted:
     if uploaded_file:
         fname = uploaded_file.name.lower()
         file_bytes = uploaded_file.read()
-        # ファイル名に pptx が含まれる、または拡張子が pptx の場合はPPTXとして処理
-        is_pptx = ".pptx" in fname
+        # マジックバイトで実際のファイル形式を判定
+        # PDF: 先頭が %PDF  /  PPTX(ZIP): 先頭が PK\x03\x04
+        is_pptx = file_bytes[:4] == b'PK\x03\x04'
         if is_pptx:
             with st.spinner("📊 PPTX を解析中..."):
                 pptx_text, pptx_error = extract_pptx_text(file_bytes)
