@@ -15,6 +15,7 @@ from analyzer.contract_analyzer import analyze_contract
 from analyzer.domain_analyzer import analyze_domain
 from analyzer.web_analyzer import fetch_url_content, search_scam_reputation, check_wayback_machine
 from analyzer.pdf_analyzer import extract_pdf_text
+from analyzer.pptx_analyzer import extract_pptx_text
 from analyzer.scoring import (
     calculate_final_score, build_verdict, build_structural_risks,
     generate_conclusion,
@@ -142,7 +143,11 @@ with st.form("investigation_form"):
     with col2:
         text_input = st.text_area("テキスト貼り付け（資料・説明文・メッセージ等）", height=180,
             placeholder="ホワイトペーパーの内容、紹介文、チャットのメッセージなどをここに貼り付けてください")
-        pdf_file = st.file_uploader("PDF アップロード", type=["pdf"])
+        uploaded_file = st.file_uploader(
+            "PDF / PPTX アップロード",
+            type=["pdf", "pptx"],
+            help="ホワイトペーパー・提案資料・スライド資料など",
+        )
 
     submitted = st.form_submit_button("🔍 調査開始", type="primary", use_container_width=True)
 
@@ -157,14 +162,24 @@ if submitted:
     domain_for_analysis = ""
     reputation_results  = None
 
-    if pdf_file:
-        with st.spinner("📄 PDF を解析中..."):
-            pdf_text, pdf_error = extract_pdf_text(pdf_file.read())
-            if pdf_error:
-                st.warning(f"PDF: {pdf_error}")
-            else:
-                combined_text += "\n\n" + pdf_text
-                st.success(f"✅ PDF から {len(pdf_text):,} 文字を抽出しました")
+    if uploaded_file:
+        fname = uploaded_file.name.lower()
+        if fname.endswith(".pptx"):
+            with st.spinner("📊 PPTX を解析中..."):
+                pptx_text, pptx_error = extract_pptx_text(uploaded_file.read())
+                if pptx_error:
+                    st.warning(f"PPTX: {pptx_error}")
+                else:
+                    combined_text += "\n\n" + pptx_text
+                    st.success(f"✅ PPTX から {len(pptx_text):,} 文字を抽出しました")
+        else:
+            with st.spinner("📄 PDF を解析中..."):
+                pdf_text, pdf_error = extract_pdf_text(uploaded_file.read())
+                if pdf_error:
+                    st.warning(f"PDF: {pdf_error}")
+                else:
+                    combined_text += "\n\n" + pdf_text
+                    st.success(f"✅ PDF から {len(pdf_text):,} 文字を抽出しました")
 
     if url_input:
         with st.spinner("🌐 サイトを取得中..."):
