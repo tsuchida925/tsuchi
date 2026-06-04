@@ -274,8 +274,23 @@ CLAIM_PATTERNS = [
 
 # ── 分析関数 ──────────────────────────────────────────────────────
 
+def _normalize(text: str) -> str:
+    """PDFやOCR抽出テキストの正規化：余分な空白・改行を除去して検出精度を上げる"""
+    import unicodedata
+    # 全角→半角（数字・英字）
+    text = unicodedata.normalize("NFKC", text)
+    # 日本語文字間の空白を除去（OCRで「日 利」→「日利」）
+    text = re.sub(r'(?<=[　-鿿])\s+(?=[　-鿿])', '', text)
+    # 連続空白を1つに
+    text = re.sub(r'[ \t]+', ' ', text)
+    return text
+
+
 def analyze_text(text: str) -> Tuple[List[TextSignal], int]:
     """テキストを分析して詐欺シグナルと加算スコアを返す"""
+    # 正規化してから分析（PDF/OCR抽出テキストのノイズ除去）
+    text = _normalize(text)
+
     signals: List[TextSignal] = []
     total_score = 0
     seen_categories = {}
@@ -361,6 +376,7 @@ def classify_case_types(signals: List[TextSignal]) -> List[str]:
 
 
 def extract_claims(text: str) -> List[Dict[str, str]]:
+    text = _normalize(text)
     """外部確認が必要な主張を抽出"""
     claims = []
     for pattern, label in CLAIM_PATTERNS:
@@ -370,6 +386,7 @@ def extract_claims(text: str) -> List[Dict[str, str]]:
 
 
 def analyze_reward_structure(text: str) -> Dict[str, List[str]]:
+    text = _normalize(text)
     """報酬構造を分類して抽出"""
     structure = {
         "固定報酬": [],
@@ -399,6 +416,7 @@ def analyze_reward_structure(text: str) -> Dict[str, List[str]]:
 
 
 def analyze_revenue_source(text: str, signals: List[TextSignal]) -> Dict[str, str]:
+    text = _normalize(text)
     """収益原資マップを分析"""
     cats = {s.category for s in signals}
 
@@ -428,6 +446,7 @@ def analyze_revenue_source(text: str, signals: List[TextSignal]) -> Dict[str, st
 
 
 def extract_financial_claims(text: str) -> List[str]:
+    text = _normalize(text)
     """数値入り利回り・収益主張を抽出"""
     claims = []
     patterns = [
